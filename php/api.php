@@ -142,8 +142,6 @@ class Create_user {
 	 * @return Create_user|null
 	 */
 	public static function createUser ($mysqli, $gameAPI, $email, $latitude, $longitude) {
-		// TODO implement PHP side of create_user SQL stored proc
-		//CALL create_user(gameAPI, 'Marc.Hayes.Tech@Gmail.com', 35.1107, -106.6100);
 		// handle degenerate cases
 		if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli") {
 			throw(new mysqli_sql_exception("Input is not a valid mysqli object"));
@@ -276,7 +274,6 @@ class Find_Locals {
 	 * @return null
 	 */
 	public static function findLocals ($mysqli, $gameAPI, $token, $distanceMax) {
-		// TODO implement PHP side of find_locals SQL stored proc
 		// handle degenerate cases
 		if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli") {
 			throw(new mysqli_sql_exception("Input is not a valid mysqli object"));
