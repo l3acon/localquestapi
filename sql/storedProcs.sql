@@ -84,11 +84,10 @@ CREATE PROCEDURE create_user (IN APIKey VARCHAR(64), Mail VARCHAR(256), Lat DECI
 
 			SET newUserID = (SELECT userId FROM user WHERE email = Mail);
 
--- TODO FIX HORRIBLE KLUDGE JOIN HERE...
-			INSERT INTO userDistance (userId1, userId2, distance)
-				SELECT u1.userId, u2.userId, sqrt((u1.latitude - u2.latitude)^2 + (u1.longitude - u2.longitude)^2)
+		INSERT INTO userDistance (userId1, userId2, distance)
+				SELECT u1.userId, u2.userId, 12742*ASIN(SQRT(POWER(SIN((RADIANS(u2.latitude)-RADIANS(u1.latitude))/2.0),2.0)+COS(RADIANS(u1.latitude))*COS(RADIANS(u2.latitude))*POWER(SIN((RADIANS(u2.longitude)-RADIANS(u1.longitude))/2.0),2.0)))
 				FROM user u1
-					INNER JOIN user u2 ON u2.latitude BETWEEN u1.latitude - 1 AND u1.latitude + 1 AND u2.longitude BETWEEN u1.longitude - 1 AND u1.longitude + 1
+					INNER JOIN user u2 ON 12742*ASIN(SQRT(POWER(SIN((RADIANS(u2.latitude)-RADIANS(u1.latitude))/2.0),2.0)+COS(RADIANS(u1.latitude))*COS(RADIANS(u2.latitude))*POWER(SIN((RADIANS(u2.longitude)-RADIANS(u1.longitude))/2.0),2.0)))<500
 				WHERE u1.userId = newUserID
 						AND u1.userId <> u2.userId;
 		END IF;
