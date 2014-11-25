@@ -1,4 +1,3 @@
-USE localQuestAPI;
 --
 -- drop tables if they exist in the database
 -- these are dropped in FK > PK order
