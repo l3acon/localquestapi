@@ -2,49 +2,20 @@
 /**
  * @author Marc Hayes <Marc.Hayes.Tech@gmail.com>
  */
+require_once('../php/STUFF.php');
 
 /**
- * Class Create_game
+ * Class Create_Game
  */
-class Create_game {
-	private $gameAPI;
-
+class API {
 	/**
-	 * @param $gameAPI
-	 */
-	function __construct($gameAPI)
-	{
-		$this->gameAPI = $gameAPI;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getGameAPI()
-	{
-		return $this->gameAPI;
-	}
-
-	/**
-	 * @param mixed $gameAPI
-	 */
-	public function setGameAPI($gameAPI)
-	{
-		// TODO validate this
-		$this->gameAPI = $gameAPI;
-	}
-
-	/**
-	 * @param $mysqli
 	 * @param $gameDesc
-	 * @return Create_game|null
+	 * @return array
+	 * @throws RangeException
+	 * @throws UnexpectedValueException
+	 * @throws mysqli_sql_exception
 	 */
-	public static function createGame ($mysqli, $gameDesc) {
-		// handle degenerate cases
-		if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli") {
-			throw(new mysqli_sql_exception("Input is not a valid mysqli object"));
-		}
-
+	public static function createGame ($gameDesc) {
 		// enforce that $gameDesc is NOT null
 		if($gameDesc === null) {
 			throw(new UnexpectedValueException("gameDesc must not be null"));
@@ -62,91 +33,24 @@ class Create_game {
 		}
 
 		// create query template
-		$query = "CALL create_game(?);";
+		$query = "CALL create_game($gameDesc)";
 
-		$statement = $mysqli->prepare($query);
-		if($statement === false) {
-			throw(new mysqli_sql_exception("Unable to prepare statement"));
-		}
+		$results = API::db_all($query);
 
-		// bind the variables to the place holders in the template
-		$wasClean = $statement->bind_param("s", $gameDesc);
-		if($wasClean === false) {
-			throw(new mysqli_sql_exception("Unable to bind parameters"));
-		}
-
-		// execute the statement
-		$result = $statement->execute();
-		if($result === false) {
-			throw(new mysqli_sql_exception("Unable to execute mySQL statement"));
-		}
-
-		// since this is unique this will return only 1 row
-		$row = $result->fetch_assoc();
-
-		//convert assoc array to Create_game object
-		if($row !== null) {
-			try {
-				$game = new Create_game($row["gameAPI"]);
-			} catch(Exception $exception) {
-				// if the row could not be converted throw it
-				throw(new mysqli_sql_exception("Unable to process result set"));
-			}
-			// if we got here, the Create_game is good
-			return($game);
-		} else {
-			// no result found return null
-			return(null);
-		}
-	}
-}
-
-
-/**
- * Class Create_user
- */
-class Create_user {
-	private $userToken;
-
-	/**
-	 * @param $userToken
-	 */
-	function __construct($userToken)
-	{
-		$this->userToken = $userToken;
+		return($results);
 	}
 
 	/**
-	 * @return mixed
-	 */
-	public function getUserToken()
-	{
-		return $this->userToken;
-	}
-
-	/**
-	 * @param mixed $userToken
-	 */
-	public function setUserToken($userToken)
-	{
-		// TODO validate this
-		$this->userToken = $userToken;
-	}
-
-	/**
-	 * @param $mysqli
 	 * @param $gameAPI
 	 * @param $email
 	 * @param $latitude
 	 * @param $longitude
-	 * @return Create_user|null
+	 * @return string
+	 * @throws RangeException
+	 * @throws UnexpectedValueException
+	 * @throws mysqli_sql_exception
 	 */
-	public static function createUser ($mysqli, $gameAPI, $email, $latitude, $longitude) {
-		// handle degenerate cases
-		if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli") {
-			throw(new mysqli_sql_exception("Input is not a valid mysqli object"));
-		}
-
+	public static function createUser ($gameAPI, $email, $latitude, $longitude) {
 		// enforce that $gameAPI is NOT null
 		if($gameAPI === null) {
 			throw(new UnexpectedValueException("gameDesc must not be null"));
@@ -195,90 +99,25 @@ class Create_user {
 		}
 
 		// create query template
-		$query = "CALL create_user(?,?,?,?);";
+		$query = "CALL create_user('$gameAPI','$email',$latitude,$longitude);";
 
-		$statement = $mysqli->prepare($query);
-		if($statement === false) {
-			throw(new mysqli_sql_exception("Unable to prepare statement"));
-		}
+		$results = API::db_all($query);
 
-		// bind the variables to the place holders in the template
-		$wasClean = $statement->bind_param("ssdd", $gameAPI, $email, $latitude, $longitude);
-		if($wasClean === false) {
-			throw(new mysqli_sql_exception("Unable to bind parameters"));
-		}
+		$results =  API::array2json($results);
 
-		// execute the statement
-		$result = $statement->execute();
-		if($result === false) {
-			throw(new mysqli_sql_exception("Unable to execute mySQL statement"));
-		}
-
-		// since this is unique this will return only 1 row
-		$row = $result->fetch_assoc();
-
-		//convert assoc array to Create_user object
-		if($row !== null) {
-			try {
-				$user = new Create_user($row["userToken"]);
-			} catch(Exception $exception) {
-				// if the row could not be converted throw it
-				throw(new mysqli_sql_exception("Unable to process result set"));
-			}
-			// if we got here, the Create_user is good
-			return($user);
-		} else {
-			// no result found return null
-			return(null);
-		}
-	}
-}
-
-
-/**
- * Class Find_Locals
- */
-class Find_Locals {
-	private $userToken;
-
-	/**
-	 * @param $userToken
-	 */
-	function __construct($userToken)
-	{
-		$this->userToken = $userToken;
+		return($results);
 	}
 
 	/**
-	 * @return mixed
-	 */
-	public function getLocals()
-	{
-		return $this->$userToken;
-	}
-
-	/**
-	 * @param $userToken
-	 */
-	public function setLocals($userToken)
-	{
-		// TODO validate this
-		$this->userToken = $userToken;
-	}
-
-	/**
-	 * @param $mysqli
 	 * @param $gameAPI
 	 * @param $token
 	 * @param $distanceMax
-	 * @return null
+	 * @return array
+	 * @throws RangeException
+	 * @throws UnexpectedValueException
+	 * @throws mysqli_sql_exception
 	 */
-	public static function findLocals ($mysqli, $gameAPI, $token, $distanceMax) {
-		// handle degenerate cases
-		if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli") {
-			throw(new mysqli_sql_exception("Input is not a valid mysqli object"));
-		}
-
+	public static function findLocals ($gameAPI, $token, $distanceMax) {
 		// enforce that $gameAPI is NOT null
 		if($gameAPI === null) {
 			throw(new UnexpectedValueException("gameDesc must not be null"));
@@ -317,42 +156,51 @@ class Find_Locals {
 		}
 
 		// create query template
-		$query = "CALL create_user(?,?,?);";
-		$statement = $mysqli->prepare($query);
-		if($statement === false) {
-			throw(new mysqli_sql_exception("Unable to prepare statement"));
-		}
+		$query = "CALL find_locals('$gameAPI','$token',$distanceMax)";
 
-		// bind the variables to the place holders in the template
-		$wasClean = $statement->bind_param("ssd", $gameAPI, $token, $distanceMax);
-		if($wasClean === false) {
-			throw(new mysqli_sql_exception("Unable to bind parameters"));
-		}
+		$results = API::db_all($query);
 
-		// execute the statement
-		$result = $statement->execute();
-		if($result === false) {
-			throw(new mysqli_sql_exception("Unable to execute mySQL statement"));
-		}
+		$results = json_encode($results);
 
-		// process results
-		$results = $statement->get_result();
-		if($results->num_rows > 0) {
-			// retrieve results in bulk into an array
-			$results = $results->fetch_all(MYSQL_ASSOC);
-			if($results === false) {
-				throw(new mysqli_sql_exception("Unable to process result set"));
+		return($results);
+	}
+
+	/**
+	 * @param $query
+	 * @return array
+	 * @throws mysqli_sql_exception
+	 */
+	private static function db_all($query)
+	{
+		//Open connection
+		$link = MysqliConfiguration::getMysqli();
+
+		$array = array();
+
+		// Execute multi query
+		if (($hmm = mysqli_multi_query($link,$query)) !== false)
+		{
+			do
+			{
+				$count = 0;
+				// Store result set
+				if ($result=mysqli_store_result($link))
+				{
+					while ($row=mysqli_fetch_assoc($result))
+					{
+						$array[$count] = $row;
+						$count++;
+					}
+					mysqli_free_result($result);
+				}
 			}
-
-			// step through results array and convert to Find_Locals objects
-			foreach ($results as $index => $row) {
-				$results[$index] = new Find_Locals($row["userToken"]);
-			}
-
-			// return resulting array of Find_Locals objects
-			return($results);
+			while (mysqli_next_result($link));
 		} else {
-			return(null);
+			throw(new mysqli_sql_exception("Derp (".$link->errono.")".$link->error));
 		}
+
+		mysqli_close($link);
+
+		return($array);
 	}
 }
