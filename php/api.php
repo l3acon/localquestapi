@@ -151,7 +151,7 @@ class API {
 		}
 
 		// enforce that distance max is a valid decimal
-		if(is_float($distanceMax) === false) {
+		if(($distanceMax = floatval($distanceMax)) === false) {
 			throw(new UnexpectedValueException("distanceMax $distanceMax is not a valid decimal"));
 		}
 
